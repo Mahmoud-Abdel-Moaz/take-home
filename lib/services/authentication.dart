@@ -14,7 +14,7 @@ class AuthenticationService {
         userId=result.user!.uid;
         CacheHelper.saveData(key: 'userId', value: result.user!.uid);
       }else{
-        throw 'Faild Authentication';
+        throw 'Failed Authentication';
       }
     }catch(e){
       if (kDebugMode) {
@@ -22,7 +22,11 @@ class AuthenticationService {
       }
       rethrow;
     }
-
+  }
+  static Future<void> signOut()async{
+    _firebaseAuth.signOut();
+    CacheHelper.removeData(key: 'userId');
+    userId=null;
   }
 }
 

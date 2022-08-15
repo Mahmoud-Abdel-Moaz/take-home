@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:takehome/view/shipment/shipment_details_view.dart';
+import '../../view/login/login_view.dart';
+import '../../view/shipment/shipment_details_view.dart';
 import '../../model/shipment/shipment.dart';
+import '../../services/authentication.dart';
 import '../../widgets/components.dart';
 
 import 'start_shipment_view.dart';
@@ -21,8 +23,13 @@ class ShipmentsScreen extends StatelessWidget {
               fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        leading:IconButton(onPressed: ()=>navigateTo(context, const StartShipmentScreen()), icon: const Icon(Icons.add,color: Colors.white,size: 20,),),
+
         actions: [
-          IconButton(onPressed: ()=>navigateTo(context, const StartShipmentScreen()), icon: const Icon(Icons.add,color: Colors.white,size: 20,),),
+          IconButton(onPressed: () {
+            AuthenticationService.signOut();
+            navigateToAndFinish(context, const LoginScreen());
+          }, icon: const Icon(Icons.logout,color: Colors.white,size: 20,),),
         ],
       ),
       body: Padding(
@@ -52,7 +59,7 @@ class ShipmentsScreen extends StatelessWidget {
                   },
                   child: ListTile(
                     title: Text(shipment.id!),
-                    subtitle: Text(DateTime.parse(shipment.locations!.last.time!.toDate().toString()).toString()),
+                    subtitle: Text(DateTime.parse(shipment.locations!.first.time!.toDate().toString()).toString()),
                   ),
                 );
               },

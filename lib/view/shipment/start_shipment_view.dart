@@ -1,14 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
-import '../../model/shipment/locations.dart';
-import '../../model/shipment/shipment.dart';
-import '../../services/database.dart';
 import '../../services/location_service.dart';
-import '../../shared/components/constants.dart';
 import '../../widgets/components.dart';
-import 'shipment_tracking_view.dart';
 
 class StartShipmentScreen extends StatefulWidget {
   const StartShipmentScreen({Key? key}) : super(key: key);
@@ -19,8 +11,8 @@ class StartShipmentScreen extends StatefulWidget {
 
 class _StartShipmentScreenState extends State<StartShipmentScreen> {
   final _shipmentIdController = TextEditingController();
-  final _shipmentIdFocusNode = FocusNode(); //TextEditingController();
-  bool _isLoading = false;
+  final _shipmentIdFocusNode = FocusNode();
+  bool _isTracking = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,11 +43,21 @@ class _StartShipmentScreenState extends State<StartShipmentScreen> {
                 hint: 'Shipment Id',
                 focusNode: _shipmentIdFocusNode,
                 onSubmit: addShipment),
+            if(_isTracking)
+              Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    CircularProgressIndicator(),
+                    Text("Tracking ..."),
+                  ],
+                ),
+              ),
             defaultButton(
-                text: 'Add shipment',
-                onTap: addShipment,
-                context: context,
-                isLoading: _isLoading),
+              text: 'Add shipment',
+              onTap: addShipment,
+              context: context,),
           ],
         ),
       ),
@@ -64,38 +66,34 @@ class _StartShipmentScreenState extends State<StartShipmentScreen> {
 
   void addShipment() async {
     if (_shipmentIdController.text.isNotEmpty) {
-      LocationService.checkLocationServicesInDevice(_shipmentIdController.text);
-     /* LocationData? locationData =
-          await LocationService.checkLocationServicesInDevice();
-      if (locationData != null) {
-        if (kDebugMode) {
-          print('${locationData!.longitude} ${locationData!.latitude}');
-          setState(() {
-            _isLoading=!_isLoading;
-          });
-          Shipment shipment=Shipment(
-              id: _shipmentIdController.text,
-              driverId: userId,
-              locations: [
-                ShipmentLocation(
-                    latitude: locationData.latitude,
-                    longitude: locationData.longitude,
-                    time: Timestamp.fromDate(DateTime.now()))
-              ]);
-          DatabaseService.addShipment(shipment).then((value){
+      bool locationServicesEnabled = await LocationService
+          .checkLocationServicesInDevice();
+      if (locationServicesEnabled) {
+        bool locationPermissionEnabled = await LocationService
+            .checkLocationPermission();
+        if (locationPermissionEnabled) {
+          if (_isTracking) {
             setState(() {
-              _isLoading=!_isLoading;
+              _isTracking = false;
             });
-            navigateTo(context, ShipmentTrackingScreen(shipment));
+          }
+          setState(() {
+            _isTracking = true;
           });
-        }*/
-     /* } else {
+          LocationService.getCurrentLocation(_shipmentIdController.text);
+        } else {
+          showToast(
+              msg: 'Can not Start Tracking without location permission ',
+              state: ToastStates.ERROR);
+        }
+      } else {
         showToast(
-            msg: 'must Start Shipment with current location',
+            msg: 'Can not Start Tracking without enable location services',
             state: ToastStates.ERROR);
-      }*/
-    } else {
+      }
+    }else {
       showToast(msg: 'Enter Shipment Id', state: ToastStates.ERROR);
     }
   }
+
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:takehome/model/shipment/locations.dart';
+import '../../model/shipment/locations.dart';
 
 import '../../model/shipment/shipment.dart';
 
@@ -15,11 +15,10 @@ class ShipmentDetailsScreen extends StatefulWidget {
 class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
   static CameraPosition _initialCameraPosition = const CameraPosition(
     target: LatLng(0, 0),
-    zoom: 10,
+    zoom: 15,
   );
   GoogleMapController? _googleMapController;
   List<Marker> markers = [];
-  LatLng? _userLatLng, _locationLatLng;
 
   Map<PolylineId, Polyline> polylines = {};
   Set<Polyline> _polylines = Set<Polyline>();
@@ -34,7 +33,7 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
         zoom: 10,
       );
     });
-    updateMarkers(widget.shipment!.locations!.last);
+    updateMarkers(widget.shipment!.locations!.first);
     super.initState();
   }
 
@@ -52,12 +51,6 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
         onMapCreated: (controller) => _googleMapController = controller,
         markers: markers.toSet(),
         polylines: _polylines,
-        onTap: (argument) {
-          /* updateMarkers(LatLng(argument.latitude, argument.longitude));
-                  getUserLocation(
-                      latitude: argument.latitude,
-                      longitude: argument.longitude);*/
-        },
       ),
     );
   }
@@ -83,7 +76,7 @@ class _ShipmentDetailsScreenState extends State<ShipmentDetailsScreen> {
     setState(() {
       _polylines.add(Polyline(
           width: 5,
-          polylineId: PolylineId('polyLine'),
+          polylineId:const PolylineId('polyLine'),
           color: Theme.of(context).primaryColor,
           points: polylineCoordinates));
     });
